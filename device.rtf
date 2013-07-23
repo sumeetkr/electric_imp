@@ -1,0 +1,78 @@
+{\rtf1\ansi\ansicpg1252\cocoartf1187\cocoasubrtf390
+{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+\margl1440\margr1440\vieww10800\viewh8400\viewkind0
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural
+
+\f0\fs24 \cf0 // Semester Project for Connected Embedded Systems Architecture \'97 Version 0\
+// Author: Sumeet Kumar (and WWW)\
+// 7-9-2013\
+// Device code\
+\
+hardware.pin9.configure(ANALOG_IN); \
+const b_therm = 3988;\
+const t0_therm = 298.15;\
+ \
+// Output structure for sending temperature to server\
+local tempOut    = OutputPort("Temperature (F)", "number");\
+local tempOutStr = OutputPort("Temperature (F)", "string");\
+ \
+function sendTemp() \{\
+    // scale the ADC reading to a voltage by dividing by the full-scale value and multiplying by the supply voltage\
+    local v_therm = 3.3 * hardware.pin9.read() / 65535.0;\
+    // calculate the resistance of the thermistor at the current temperature\
+    local r_therm = 10000.0 / ( (3.3 / v_therm) - 1);\
+    local ln_therm = math.log(10000.0 / r_therm);\
+ \
+    local t_therm = (t0_therm * b_therm) / (b_therm - t0_therm * ln_therm) - 273.15;\
+ \
+    // convert to fahrenheit for the less-scientific among us\
+    local f = (t_therm) * 9.0 / 5.0 + 32.0;\
+    // format into a string for the string output port\
+    local f_str = format("%.01f", f)\
+//    server.log("Current temp is "+f_str+" F");\
+ \
+    // emit values to our output ports\
+    tempOut.set(f);\
+    tempOutStr.set(f_str);\
+    local device_id = hardware.getimpeeid();\
+    if(device_id == "2360a83643fc42ee")\
+        \{\
+            server.log("sending request to sen.se from device id " + device_id);\
+            agent.send("sendToOpenSense", f);\
+        \}\
+    //sendtocosm(%.01f);\
+    //fetch();\
+    //sendTemp();\
+    imp.wakeup(5, sendTemp);\
+\}\
+\
+function checkMemory()\{\
+    local arr = [];\
+//	while(1)\
+//	\{\
+//       arr.push(100);\
+//    \}\
+\}\
+//Register with Electric Imp Servers\
+imp.configure("CESA Sumeet-- Cloud 23442c3643fc42ee", [] , [tempOut, tempOutStr]);\
+// device code for ping request\
+agent.on("ping", function(msg) \{\
+  local val = "response from CESA Cloud Integration : 2360a83643fc42ee"\
+  agent.send("pong", val);\
+\});\
+\
+local sample_json = "\{\\"acc_z\\": 1005, \\"bat\\": 1005,\\"temp\\": 510, \\"light\\": 889,\\"timestamp\\": 1353441771000, \\"id\\": \\" 1\\",\\"acc_y\\": 344,\\"acc_x\\": 336 \}";\
+//agent.send("postJSON", sample_json);\
+//agent.send("getlastReadings", null);\
+//agent.send("sendSMS", 0);\
+sensor_values <- \{\
+    acc_z= 100\
+    deleteme="now"\
+\};\
+\
+server.log(sensor_values); //this will print the string "now"\
+\
+sendTemp();\
+//checkMemory();\
+}
