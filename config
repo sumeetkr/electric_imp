@@ -1,0 +1,11 @@
+2360a83643fc42ee
+
+https://agent.electricimp.com/R8sklm5MJjcs
+
+{"frequency": "0.5","post_url": "http://api.sen.se/events/?sense_key="RMSHIf10oCKD22_NINkGs", "temp_feed_id": "38549" ,"pressure_feed_id": "38550" , "motion_feed_id": "38551" , "humidity_feed_id": "38552" , "x_acceleration_feed_id": "38553","y_acceleration_feed_id": "38554" , "z_acceleration_feed_id": "38555" , "light_feed_id": "38556" , "microphone_feed_id": "38557"}
+
+
+https://agent.electricimp.com/Fe0JG5a9WyCY
+
+{"frequency": "0.5","post_url": "http://api.sen.se/events/?sense_key=RMSHIf10oCKD22_NINkGs", "temp_feed_id": "39380" ,"pressure_feed_id": "39381" , "motion_feed_id": "39382" , "humidity_feed_id": "39383" , "x_acceleration_feed_id": "39384","y_acceleration_feed_id": "39385" , "z_acceleration_feed_id": "39386" , "light_feed_id": "39387" , "microphone_feed_id": "39388"}
+
