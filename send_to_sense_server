@@ -1,0 +1,153 @@
+// Semester Project for Connected Embedded Systems Architecture — Version 0
+// Author: Sumeet Kumar (and WWW )
+// 7-9-2013
+
+// Agent code
+local is_debug = false;//true to enable debug messages
+local sense_post_url = "" // to be set by update_config
+
+// sensor specific functions
+local temperature_feed_id;
+local pressure_feed_id;
+local motion_feed_id;
+local humidity_feed_id;
+local x_acceleration_feed_id;
+local y_acceleration_feed_id;
+local light_feed_id;
+local microphone_feed_id;
+
+// core functions
+responses <- [];
+http.onrequest(function(req, res) {
+  responses.push(res);
+  try {
+      if (req.body != null){
+          local t = http.jsondecode(req.body);
+          server.log(req.body);   
+          if(is_debug) server.log("request from aliens " + req.body);
+          
+          local config_table = http.jsondecode(http.jsondecode(req.body).config);
+          update_config_values(config_table);
+      } 
+    
+    res.send(200, "okay");
+  } catch (e) {
+      res.send(500, "error");
+      if(is_debug) server.log("received request from aliens, but got an error");
+  }
+});
+
+function onHttpComplete(m)
+{
+  if(is_debug) server.log("http request sent , status was " + m.statuscode);
+  if (m.statuscode == 200) { // "OK"
+    if(is_debug) server.log("Proudly using " + m.headers.server);
+  }
+}
+
+device.on("update_config", function(data) {
+    if(is_debug) server.log("making web request to get config "+ data);
+    m <- http.get("http://cmusds.herokuapp.com/devices/get_config_by_uri/"+data).sendsync();
+    
+    if(is_debug) server.log("status was " + m.statuscode);
+    
+    server.log(http.jsondecode(m.body).config);
+    
+    local config_table = http.jsondecode(http.jsondecode(m.body).config);
+    update_config_values(config_table);
+});
+
+function update_config_values(config_table)
+{
+    sense_post_url = config_table.post_url;
+    temperature_feed_id = config_table.temp_feed_id;
+    pressure_feed_id = config_table.pressure_feed_id;
+    motion_feed_id = config_table.motion_feed_id;
+    humidity_feed_id = config_table.humidity_feed_id;
+    x_acceleration_feed_id = config_table.x_acceleration_feed_id;
+    y_acceleration_feed_id = config_table.y_acceleration_feed_id;
+    light_feed_id = config_table.light_feed_id;
+    microphone_feed_id = config_table.microphone_feed_id;
+
+    device.send("set_frequency", config_table.frequency);    
+}
+
+device.on("sendTemperatureToOpenSense", function(data) {
+    local dataString = "{\"feed_id\": " + temperature_feed_id + ",\"value\": "+ data+ "}";
+  http.post(sense_post_url,
+    { "Content-Type": "application/json" }, 
+    dataString
+  ).sendasync(onHttpComplete);
+  
+    if(is_debug) server.log("temperature sent to open sense");
+});
+
+device.on("sendMicrophoneToOpenSense", function(data) {
+    local dataString = "{\"feed_id\":" + microphone_feed_id + ",\"value\":"+ data+ "}";
+    http.post(sense_post_url,
+    { "Content-Type": "application/json" }, 
+    dataString
+  ).sendasync(onHttpComplete);
+  
+    if(is_debug) server.log("pressure sent to open sense");
+});
+
+device.on("sendMotionToOpenSense", function(data) {
+    local dataString = "{\"feed_id\":" + motion_feed_id + ",\"value\":"+ data+ "}";
+    http.post(sense_post_url,
+    { "Content-Type": "application/json" }, 
+    dataString
+  ).sendasync(onHttpComplete);
+    
+    if(is_debug) server.log("pressure sent to open sense");
+});
+
+device.on("sendPressureToOpenSense", function(data) {
+    local dataString = "{\"feed_id\":" + pressure_feed_id + ",\"value\":"+ data+ "}";
+    http.post(sense_post_url,
+    { "Content-Type": "application/json" }, 
+    dataString
+  ).sendasync(onHttpComplete);
+  
+//  server.log("pressure sent to open sense");
+});
+
+device.on("sendXAccelerationToOpenSense", function(data) {
+    local dataString = "{\"feed_id\":" + x_acceleration_feed_id + ",\"value\":"+ data+ "}";
+    http.post(sense_post_url,
+    { "Content-Type": "application/json" }, 
+    dataString
+  ).sendasync(onHttpComplete);
+  
+//  server.log("pressure sent to open sense");
+});
+
+device.on("sendYAccelerationToOpenSense", function(data) {
+    local dataString = "{\"feed_id\":" + y_acceleration_feed_id + ",\"value\":"+ data+ "}";
+    http.post(sense_post_url,
+    { "Content-Type": "application/json" }, 
+    dataString
+  ).sendasync(onHttpComplete);
+  
+//  server.log("pressure sent to open sense");
+});
+
+device.on("sendHumidityToOpenSense", function(data) {
+    local dataString = "{\"feed_id\":" + humidity_feed_id + ",\"value\":"+ data+ "}";
+    http.post(sense_post_url,
+    { "Content-Type": "application/json" }, 
+    dataString
+  ).sendasync(onHttpComplete);
+  
+//  server.log("pressure sent to open sense");
+});
+
+device.on("sendLightToOpenSense", function(data) {
+    local dataString = "{\"feed_id\":" + light_feed_id + ",\"value\":"+ data+ "}";
+    http.post(sense_post_url,
+    { "Content-Type": "application/json" }, 
+    dataString
+  ).sendasync(onHttpComplete);
+  
+//  server.log("pressure sent to open sense");
+});
