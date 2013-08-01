@@ -1,0 +1,57 @@
+// Semester Project for Connected Embedded Systems Architecture — Version 0
+// Author: Sumeet Kumar (and WWW )
+
+const REMOTE_URL = "http://cmu-sensor-network.herokuapp.com/sensors";//"http://cmusds.herokuapp.com/sensor_readings"; //"http://cmusds.herokuapp.com//sensor_readings"
+// Agent code
+local is_debug = true;//true to enable debug messages
+local sense_post_url = "" // to be set by update_config
+
+// sensor specific functions
+local temperature_feed_id;
+local pressure_feed_id;
+local motion_feed_id;
+local humidity_feed_id;
+local x_acceleration_feed_id;
+local y_acceleration_feed_id;
+local light_feed_id;
+local microphone_feed_id;
+
+// core functions
+responses <- [];
+http.onrequest(function(req, res) {
+  responses.push(res);
+  try {
+      if (req.body != null){
+          local t = http.jsondecode(req.body);
+          server.log(req.body);   
+          if(is_debug) server.log("request from aliens " + req.body);
+          
+          local config_table = http.jsondecode(http.jsondecode(req.body).config);
+          update_config_values(config_table);
+      } 
+    
+    res.send(200, "okay");
+  } catch (e) {
+      res.send(500, "error");
+      if(is_debug) server.log("received request from aliens, but got an error");
+  }
+});
+
+function onHttpComplete(m)
+{
+  if(is_debug) server.log("http request sent , status was " + m.statuscode);
+  if (m.statuscode == 200) { // "OK"
+    if(is_debug) server.log("Proudly using " + m.headers);
+  }
+}
+
+    device.on("postJSON", function (x) {
+      server.log("request received " + http.jsonencode(x));
+      
+      http.post(REMOTE_URL,
+        { "Content-Type": "application/json"}, 
+        http.jsonencode(x)
+      ).sendasync(onHttpComplete);
+     
+      server.log("request sent");
+    });
